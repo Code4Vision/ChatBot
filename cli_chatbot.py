@@ -186,7 +186,7 @@ class ChatbotEngine:
             
         try:
             if LLM_AVAILABLE:
-                self.model = GPT4All("orca-mini-3b-gguf2.Q4_0.gguf")
+                self.model = GPT4All("Llama-3.2-1B-Instruct-Q4_0.gguf")
                 self.model_loaded = True
                 print("Local LLM model loaded successfully!")
                 return True

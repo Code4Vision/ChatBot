@@ -3,12 +3,15 @@
 {% block title %}Create Account - Local AI Chatbot{% endblock %}
 
 {% block content %}
-<div class="card">
-    <div class="card-header">
-        <h2>📝 Create Your Account</h2>
-        <p style="opacity: 0.9; margin: 0.5rem 0 0 0;">Join the local AI chatbot experience</p>
+<div class="card" style="max-width: 500px; margin: 2rem auto;">
+    <div class="card-header" style="text-align: center; padding: 2.5rem 2rem 1.5rem;">
+        <div style="background: linear-gradient(135deg, #667eea, #764ba2); width: 70px; height: 70px; border-radius: 18px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3); font-size: 1.8rem;">
+            📝
+        </div>
+        <h2 style="font-weight: 800; margin-bottom: 0.75rem; color: #1a202c;">Create Your Account</h2>
+        <p style="opacity: 0.8; margin: 0; color: #64748b; font-size: 1.1rem;">Join the local AI chatbot experience</p>
     </div>
-    <div class="card-body">
+    <div class="card-body" style="padding: 2rem;">
         <form method="POST" action="{{ url_for('auth.register') }}">
             {{ form.hidden_tag() }}
             
@@ -61,9 +64,9 @@
             {{ form.submit(class="btn btn-primary") }}
         </form>
         
-        <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e9ecef;">
-            <p style="color: #6c757d; margin-bottom: 1rem;">Already have an account?</p>
-            <a href="{{ url_for('auth.login') }}" class="btn btn-secondary">
+        <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.2);">
+            <p style="color: #64748b; margin-bottom: 1rem; font-weight: 500;">Already have an account?</p>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-secondary" style="font-weight: 600;">
                 🔑 Sign In Instead
             </a>
         </div>

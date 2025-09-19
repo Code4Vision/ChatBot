@@ -3,19 +3,22 @@
 {% block title %}Chat - Local AI Chatbot{% endblock %}
 
 {% block content %}
-<div class="card" style="margin-bottom: 0;">
-    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-        <div>
-            <h5 style="margin: 0;">💬 Chat with AI</h5>
+<div class="card" style="margin-bottom: 0; overflow: hidden;">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; position: relative;">
+        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); opacity: 0.3;"></div>
+        <div style="position: relative; z-index: 1;">
+            <h5 style="margin: 0; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">💬 Chat with AI</span>
+            </h5>
             {% if current_user.preferences %}
-                <small style="opacity: 0.8;">Personalized for {{ current_user.preferences.get_preference('display_name', current_user.username) }}</small>
+                <small style="opacity: 0.9; background: rgba(255, 255, 255, 0.8); padding: 0.25rem 0.5rem; border-radius: 6px; font-weight: 500;">Personalized for {{ current_user.preferences.get_preference('display_name', current_user.username) }}</small>
             {% endif %}
         </div>
-        <div style="display: flex; gap: 0.5rem;">
-            <a href="{{ url_for('chat.chat_history') }}" class="nav-link" style="padding: 0.5rem; color: white; background: rgba(255,255,255,0.2); border-radius: 0.5rem;">
+        <div style="display: flex; gap: 0.75rem; position: relative; z-index: 1;">
+            <a href="{{ url_for('chat.chat_history') }}" class="nav-link" style="padding: 0.75rem; color: white; background: rgba(255,255,255,0.25); border-radius: 12px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); transition: all 0.3s ease;">
                 📝
             </a>
-            <a href="{{ url_for('auth.preferences') }}" class="nav-link" style="padding: 0.5rem; color: white; background: rgba(255,255,255,0.2); border-radius: 0.5rem;">
+            <a href="{{ url_for('auth.preferences') }}" class="nav-link" style="padding: 0.75rem; color: white; background: rgba(255,255,255,0.25); border-radius: 12px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); transition: all 0.3s ease;">
                 ⚙️
             </a>
         </div>
@@ -38,22 +41,40 @@
                 </div>
             {% endfor %}
         {% else %}
-            <div style="text-align: center; padding: 2rem; color: #6c757d;">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">🤖</div>
-                <h6>Start your first conversation!</h6>
-                <p style="margin: 0;">Your AI assistant is ready to chat. All messages are encrypted and private.</p>
+            <div style="text-align: center; padding: 3rem 2rem; color: #64748b;">
+                <div style="background: linear-gradient(135deg, #667eea, #764ba2); width: 80px; height: 80px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3); font-size: 2rem;">
+                    🤖
+                </div>
+                <h6 style="font-size: 1.3rem; font-weight: 700; color: #1a202c; margin-bottom: 1rem;">Start your first conversation!</h6>
+                <p style="margin: 0; font-size: 1rem; line-height: 1.6; max-width: 300px; margin-left: auto; margin-right: auto;">Your AI assistant is ready to chat. All messages are encrypted and private.</p>
+                <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 2rem; font-size: 0.9rem; color: #94a3b8;">
+                    <span style="display: flex; align-items: center; gap: 0.25rem;"><span style="color: #22c55e;">✓</span> Local AI</span>
+                    <span style="display: flex; align-items: center; gap: 0.25rem;"><span style="color: #22c55e;">✓</span> Encrypted</span>
+                    <span style="display: flex; align-items: center; gap: 0.25rem;"><span style="color: #22c55e;">✓</span> Private</span>
+                </div>
             </div>
         {% endif %}
         
         <!-- Typing Indicator -->
         <div id="typingIndicator" style="display: none; margin-bottom: 1rem;">
-            <div class="message-bubble bot-message" style="background: #f8f9fa;">
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <div class="spinner" style="width: 15px; height: 15px; border-width: 2px;"></div>
-                    <span style="color: #6c757d;">AI is thinking...</span>
+            <div class="message-bubble bot-message" style="background: rgba(248, 249, 250, 0.8); border: 1px solid rgba(255, 255, 255, 0.3);">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div style="display: flex; gap: 0.25rem;">
+                        <div style="width: 8px; height: 8px; background: #667eea; border-radius: 50%; animation: typing 1.4s infinite ease-in-out;"></div>
+                        <div style="width: 8px; height: 8px; background: #667eea; border-radius: 50%; animation: typing 1.4s infinite ease-in-out 0.2s;"></div>
+                        <div style="width: 8px; height: 8px; background: #667eea; border-radius: 50%; animation: typing 1.4s infinite ease-in-out 0.4s;"></div>
+                    </div>
+                    <span style="color: #64748b; font-weight: 500;">AI is thinking...</span>
                 </div>
             </div>
         </div>
+        
+        <style>
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+            30% { transform: translateY(-10px); opacity: 1; }
+        }
+        </style>
     </div>
     
     <div class="chat-input-area">
@@ -67,14 +88,16 @@
                 rows="1"
                 required
             ></textarea>
-            <button type="submit" class="btn btn-primary send-btn" id="sendBtn">
-                <span id="sendIcon">📤</span>
+            <button type="submit" class="btn btn-primary send-btn" id="sendBtn" style="background: linear-gradient(135deg, #667eea, #764ba2); position: relative; overflow: hidden;">
+                <span id="sendIcon" style="font-size: 1.2rem; transition: transform 0.2s ease;">🚀</span>
             </button>
         </form>
         
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; font-size: 0.8rem; color: #6c757d;">
-            <span>🔒 Encrypted & Private</span>
-            <button type="button" onclick="clearHistory()" style="background: none; border: none; color: #dc3545; font-size: 0.8rem; cursor: pointer;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; font-size: 0.8rem; color: #64748b;">
+            <span style="display: flex; align-items: center; gap: 0.5rem; background: rgba(34, 197, 94, 0.1); padding: 0.5rem 0.75rem; border-radius: 8px; color: #22c55e; font-weight: 500;">
+                🔒 Encrypted & Private
+            </span>
+            <button type="button" onclick="clearHistory()" style="background: rgba(239, 68, 68, 0.1); border: none; color: #ef4444; font-size: 0.8rem; cursor: pointer; padding: 0.5rem 0.75rem; border-radius: 8px; font-weight: 500; transition: all 0.2s ease;">
                 🗑️ Clear History
             </button>
         </div>

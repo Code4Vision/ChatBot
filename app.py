@@ -57,6 +57,12 @@ def create_app():
         from models import User
         return User.query.get(int(user_id))
     
+    # Create database tables first
+    with app.app_context():
+        # Import models to ensure tables are created
+        import models
+        db.create_all()
+    
     # Register blueprints
     from blueprints.auth import auth_bp
     from blueprints.chat import chat_bp
@@ -70,12 +76,6 @@ def create_app():
         if current_user.is_authenticated:
             return redirect(url_for('chat.chat_interface'))
         return render_template('index.html')
-    
-    # Create database tables
-    with app.app_context():
-        # Import models to ensure tables are created
-        import models
-        db.create_all()
     
     return app
 

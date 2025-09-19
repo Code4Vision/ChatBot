@@ -181,6 +181,7 @@ try:
 except ImportError:
     GEMINI_AVAILABLE = False
     gemini_client = None
+    types = None
     print("Warning: Gemini not available. Using fallback responses.")
 
 class ChatbotEngine:
@@ -208,17 +209,20 @@ class ChatbotEngine:
             system_instruction = f"{context}\n\nProvide helpful, accurate, and direct responses."
             
             # Generate response using Gemini
-            response = gemini_client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=[
-                    types.Content(role="user", parts=[types.Part(text=message)])
-                ],
-                config=types.GenerateContentConfig(
-                    system_instruction=system_instruction,
-                    max_output_tokens=300,
-                    temperature=0.7
+            if types:
+                response = gemini_client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=[
+                        types.Content(role="user", parts=[types.Part(text=message)])
+                    ],
+                    config=types.GenerateContentConfig(
+                        system_instruction=system_instruction,
+                        max_output_tokens=300,
+                        temperature=0.7
+                    )
                 )
-            )
+            else:
+                return self._get_fallback_response(message, user_context)
             
             if response and response.text:
                 return response.text.strip()

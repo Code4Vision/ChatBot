@@ -53,7 +53,7 @@ class User(Base):
     
     def check_password(self, password):
         """Check password against hash"""
-        if password and self.password_hash:
+        if password and self.password_hash is not None:
             return check_password_hash(str(self.password_hash), password)
         return False
     
@@ -80,7 +80,7 @@ class UserPreferences(Base):
     @property
     def preferences_data(self):
         """Decrypt and return preferences data"""
-        if self._preferences_data:
+        if self._preferences_data is not None:
             try:
                 decrypted = cipher_suite.decrypt(str(self._preferences_data).encode()).decode()
                 return json.loads(decrypted)
@@ -130,7 +130,7 @@ class ChatHistory(Base):
     @property
     def user_message(self):
         """Decrypt and return user message"""
-        if self._user_message:
+        if self._user_message is not None:
             try:
                 return cipher_suite.decrypt(str(self._user_message).encode()).decode()
             except Exception:
@@ -147,7 +147,7 @@ class ChatHistory(Base):
     @property
     def bot_response(self):
         """Decrypt and return bot response"""
-        if self._bot_response:
+        if self._bot_response is not None:
             try:
                 return cipher_suite.decrypt(str(self._bot_response).encode()).decode()
             except Exception:
@@ -169,6 +169,7 @@ try:
     from gpt4all import GPT4All
     LLM_AVAILABLE = True
 except ImportError:
+    GPT4All = None
     LLM_AVAILABLE = False
     print("Warning: GPT4All not available. Using mock responses.")
 
@@ -321,6 +322,8 @@ class CLIChatbot:
     
     def main_menu(self):
         """Main application menu"""
+        if self.current_user is None:
+            return '3'  # Exit if no user
         print(f"\n--- Welcome {self.current_user.username}! ---")
         print("1. Start Chat")
         print("2. View Chat History")
@@ -436,6 +439,8 @@ class CLIChatbot:
         
         while True:
             try:
+                if self.current_user is None:
+                    break
                 user_message = input(f"\n{self.current_user.username}: ").strip()
                 if not user_message:
                     continue
@@ -447,11 +452,11 @@ class CLIChatbot:
                 user_prefs = self.current_user.preferences
                 user_context = user_prefs.preferences_data if user_prefs else {}
                 
-                # Get recent conversation history for context
+                # Get recent conversation history for context (limit to 3 for cleaner context)
                 recent_history = self.session.query(ChatHistory)\
                     .filter_by(user_id=self.current_user.id)\
                     .order_by(ChatHistory.timestamp.desc())\
-                    .limit(5).all()
+                    .limit(3).all()
                 
                 print("🤖 AI is thinking...")
                 
@@ -485,6 +490,9 @@ class CLIChatbot:
         """View chat history"""
         print("\n--- Chat History ---")
         
+        if self.current_user is None:
+            print("No user logged in.")
+            return
         history = self.session.query(ChatHistory)\
             .filter_by(user_id=self.current_user.id)\
             .order_by(ChatHistory.timestamp.desc())\

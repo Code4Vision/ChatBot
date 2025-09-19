@@ -1,172 +1,112 @@
 """
-Authentication blueprint using Google OAuth 2.0
-Based on blueprint:flask_google_oauth integration
+Local authentication blueprint with username/password system
+Mobile-first design focused
 """
-import json
-import os
 import uuid
-import secrets
 from datetime import datetime
 
-import requests
 from flask import Blueprint, redirect, request, url_for, flash, render_template, session
 from flask_login import login_required, login_user, logout_user, current_user
-from oauthlib.oauth2 import WebApplicationClient
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SubmitField, EmailField
+from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from app import db
 from models import User, UserPreferences
 
-# OAuth credentials loaded at runtime to avoid import-time failures
-def get_google_oauth_config():
-    """Get Google OAuth configuration with proper error handling"""
-    client_id = os.environ.get("GOOGLE_OAUTH_CLIENT_ID")
-    client_secret = os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET")
-    
-    if not client_id or not client_secret:
-        raise ValueError("Google OAuth credentials (GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET) are required for authentication.")
-    
-    return client_id, client_secret
-GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
-
-# Make sure to use this redirect URL. It has to match the one in the whitelist
-try:
-    DEV_REDIRECT_URL = f'https://{os.environ["REPLIT_DEV_DOMAIN"]}/auth/google_login/callback'
-except KeyError:
-    # Fallback for local development
-    DEV_REDIRECT_URL = "http://localhost:5000/auth/google_login/callback"
-
-# Display setup instructions
-print(f"""To make Google authentication work:
-1. Go to https://console.cloud.google.com/apis/credentials
-2. Create a new OAuth 2.0 Client ID
-3. Add {DEV_REDIRECT_URL} to Authorized redirect URIs
-
-For detailed instructions, see:
-https://docs.replit.com/additional-resources/google-auth-in-flask#set-up-your-oauth-app--client
-""")
-
-# OAuth client will be initialized at runtime
-
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
-@auth_bp.route("/login")
+class LoginForm(FlaskForm):
+    """Local login form"""
+    username = StringField('Username', validators=[DataRequired(), Length(min=3, max=80)],
+                          render_kw={"placeholder": "Enter your username", "autocomplete": "username"})
+    password = PasswordField('Password', validators=[DataRequired()],
+                           render_kw={"placeholder": "Enter your password", "autocomplete": "current-password"})
+    submit = SubmitField('Sign In')
+
+class RegisterForm(FlaskForm):
+    """Local registration form"""
+    username = StringField('Username', validators=[DataRequired(), Length(min=3, max=80)],
+                          render_kw={"placeholder": "Choose a username", "autocomplete": "username"})
+    email = EmailField('Email', validators=[DataRequired(), Email()],
+                      render_kw={"placeholder": "Enter your email", "autocomplete": "email"})
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=6)],
+                           render_kw={"placeholder": "Create a password", "autocomplete": "new-password"})
+    password2 = PasswordField('Confirm Password', 
+                            validators=[DataRequired(), EqualTo('password', message='Passwords must match')],
+                            render_kw={"placeholder": "Confirm your password", "autocomplete": "new-password"})
+    submit = SubmitField('Create Account')
+    
+    def validate_username(self, username):
+        """Check if username is already taken"""
+        user = User.query.filter_by(username=username.data).first()
+        if user:
+            raise ValidationError('Username is already taken. Please choose a different one.')
+    
+    def validate_email(self, email):
+        """Check if email is already registered"""
+        user = User.query.filter_by(email=email.data).first()
+        if user:
+            raise ValidationError('Email is already registered. Please use a different email.')
+
+@auth_bp.route("/login", methods=['GET', 'POST'])
 def login():
-    """Redirect to Google OAuth login"""
+    """Local login"""
     if current_user.is_authenticated:
         return redirect(url_for('chat.chat_interface'))
     
-    try:
-        client_id, client_secret = get_google_oauth_config()
-        client = WebApplicationClient(client_id)
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
         
-        google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
-        authorization_endpoint = google_provider_cfg["authorization_endpoint"]
-
-        # Generate and store OAuth state for CSRF protection
-        oauth_state = secrets.token_urlsafe(32)
-        session['oauth_state'] = oauth_state
-
-        request_uri = client.prepare_request_uri(
-            authorization_endpoint,
-            # Use proper URL construction to match the actual callback route
-            redirect_uri=url_for('auth.callback', _external=True, _scheme='https'),
-            scope=["openid", "email", "profile"],
-            state=oauth_state,  # CSRF protection
-        )
-        return redirect(request_uri)
-    except ValueError as e:
-        flash(str(e), "error")
-        return redirect(url_for('index'))
-
-@auth_bp.route("/google_login")
-def google_login():
-    """Alternative route for Google login"""
-    return redirect(url_for('auth.login'))
-
-@auth_bp.route("/google_login/callback")
-def callback():
-    """Handle Google OAuth callback with state validation"""
-    code = request.args.get("code")
-    state = request.args.get("state")
-    
-    if not code:
-        flash("Authorization failed. Please try again.", "error")
-        return redirect(url_for('index'))
-    
-    # Validate OAuth state to prevent CSRF attacks
-    expected_state = session.pop('oauth_state', None)
-    if not state or not expected_state or state != expected_state:
-        flash("Invalid authentication state. Please try again.", "error")
-        return redirect(url_for('index'))
-    
-    try:
-        client_id, client_secret = get_google_oauth_config()
-        client = WebApplicationClient(client_id)
-        
-        google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
-        token_endpoint = google_provider_cfg["token_endpoint"]
-
-        token_url, headers, body = client.prepare_token_request(
-            token_endpoint,
-            # Use proper URL construction for consistent redirect handling
-            authorization_response=request.url.replace("http://", "https://"),
-            redirect_url=url_for('auth.callback', _external=True, _scheme='https'),
-            code=code,
-        )
-        token_response = requests.post(
-            token_url,
-            headers=headers,
-            data=body,
-            auth=(client_id, client_secret),
-        )
-
-        client.parse_request_body_response(json.dumps(token_response.json()))
-
-        userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
-        uri, headers, body = client.add_token(userinfo_endpoint)
-        userinfo_response = requests.get(uri, headers=headers, data=body)
-
-        userinfo = userinfo_response.json()
-        if userinfo.get("email_verified"):
-            users_email = userinfo["email"]
-            users_name = userinfo.get("given_name", userinfo.get("name", "User"))
-        else:
-            flash("User email not available or not verified by Google.", "error")
-            return redirect(url_for('index'))
-
-        # Check if user exists, create if not
-        user = User.query.filter_by(email=users_email).first()
-        if not user:
-            user = User()  # type: ignore
-            user.username = users_name
-            user.email = users_email
-            db.session.add(user)
-            db.session.flush()  # Get the user ID
-            
-            # Create default preferences
-            preferences = UserPreferences()  # type: ignore
-            preferences.user_id = user.id
-            preferences.preferences_data = {
-                "display_name": users_name,
-                "chat_style": "friendly",
-                "topics_of_interest": [],
-                "response_length": "medium"
-            }
-            db.session.add(preferences)
-            db.session.commit()
-            
-            flash(f"Welcome {users_name}! Your account has been created.", "success")
-        else:
+        if user and check_password_hash(user.password_hash, form.password.data):
+            login_user(user, remember=True)
             user.update_last_login()
-            flash(f"Welcome back {user.username}!", "success")
+            flash(f"Welcome back, {user.username}!", "success")
+            
+            # Redirect to next page or chat interface
+            next_page = request.args.get('next')
+            return redirect(next_page) if next_page else redirect(url_for('chat.chat_interface'))
+        else:
+            flash("Invalid username or password. Please try again.", "error")
+    
+    return render_template('auth/login.html', form=form)
 
+@auth_bp.route("/register", methods=['GET', 'POST'])
+def register():
+    """Local registration"""
+    if current_user.is_authenticated:
+        return redirect(url_for('chat.chat_interface'))
+    
+    form = RegisterForm()
+    if form.validate_on_submit():
+        # Create new user
+        user = User()  # type: ignore
+        user.username = form.username.data
+        user.email = form.email.data
+        user.password_hash = generate_password_hash(form.password.data)
+        
+        db.session.add(user)
+        db.session.flush()  # Get the user ID
+        
+        # Create default preferences
+        preferences = UserPreferences()  # type: ignore
+        preferences.user_id = user.id
+        preferences.preferences_data = {
+            "display_name": form.username.data,
+            "chat_style": "friendly",
+            "topics_of_interest": [],
+            "response_length": "medium"
+        }
+        db.session.add(preferences)
+        db.session.commit()
+        
+        flash(f"Welcome to the chatbot, {user.username}! Your account has been created.", "success")
         login_user(user, remember=True)
         return redirect(url_for("chat.chat_interface"))
-        
-    except Exception as e:
-        flash("Authentication failed. Please try again.", "error")
-        print(f"OAuth error: {e}")
-        return redirect(url_for('index'))
+    
+    return render_template('auth/register.html', form=form)
 
 @auth_bp.route("/logout")
 @login_required

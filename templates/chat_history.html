@@ -1,138 +1,127 @@
 {% extends "base.html" %}
 
-{% block title %}Chat History - Secure Flask Chatbot{% endblock %}
+{% block title %}Chat History - Local AI Chatbot{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-lg-10 mx-auto">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>
-                <i class="fas fa-history me-2"></i>
-                Chat History
-            </h2>
-            <div>
-                <a href="{{ url_for('chat.export_history') }}" class="btn btn-outline-primary me-2">
-                    <i class="fas fa-download me-1"></i>Export
-                </a>
-                <a href="{{ url_for('chat.chat_interface') }}" class="btn btn-primary">
-                    <i class="fas fa-comments me-1"></i>Back to Chat
-                </a>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+    <h2 style="margin: 0;">📝 Chat History</h2>
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <a href="{{ url_for('chat.export_history') }}" class="btn btn-secondary" style="padding: 0.75rem; width: auto;">
+            💾 Export
+        </a>
+        <a href="{{ url_for('chat.chat_interface') }}" class="btn btn-primary" style="padding: 0.75rem; width: auto;">
+            💬 Back to Chat
+        </a>
+    </div>
+</div>
+
+{% if history.items %}
+    <div class="card">
+        <div class="card-header">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <span>
+                    💬 Your Conversations ({{ history.total }} messages)
+                </span>
+                <small style="opacity: 0.8;">🔒 All data encrypted</small>
             </div>
         </div>
-        
-        {% if history.items %}
-            <div class="card shadow">
-                <div class="card-header">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span>
-                            <i class="fas fa-comments me-2"></i>
-                            Your Conversations ({{ history.total }} messages)
-                        </span>
-                        <small class="text-muted">All data is encrypted and secure</small>
+        <div style="max-height: 70vh; overflow-y: auto;">
+            {% for message in history.items %}
+                <div style="padding: 1.5rem; border-bottom: 1px solid #e9ecef;">
+                    <!-- User Message -->
+                    <div style="margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <span style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.8rem; font-weight: 600;">
+                                👤 You
+                            </span>
+                            <small style="color: #6c757d;">{{ message.timestamp.strftime('%b %d, %Y at %I:%M %p') }}</small>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 1rem; border-radius: 1rem; border-bottom-right-radius: 0.5rem;">
+                            {{ message.user_message }}
+                        </div>
+                    </div>
+                    
+                    <!-- Bot Response -->
+                    <div>
+                        <div style="margin-bottom: 0.5rem;">
+                            <span style="background: #6c757d; color: white; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.8rem; font-weight: 600;">
+                                🤖 AI Assistant
+                            </span>
+                        </div>
+                        <div style="background: white; padding: 1rem; border: 1px solid #e9ecef; border-radius: 1rem; border-bottom-left-radius: 0.5rem;">
+                            {{ message.bot_response }}
+                        </div>
                     </div>
                 </div>
-                <div class="card-body p-0">
-                    {% for message in history.items %}
-                        <div class="border-bottom p-3">
-                            <div class="row">
-                                <div class="col-md-8">
-                                    <div class="mb-2">
-                                        <span class="badge bg-primary me-2">You</span>
-                                        <small class="text-muted">{{ message.timestamp.strftime('%B %d, %Y at %I:%M %p') }}</small>
-                                    </div>
-                                    <div class="user-message-content mb-3 p-2 bg-light rounded">
-                                        {{ message.user_message }}
-                                    </div>
-                                    
-                                    <div class="mb-2">
-                                        <span class="badge bg-secondary me-2">Assistant</span>
-                                    </div>
-                                    <div class="bot-message-content p-2 border rounded">
-                                        {{ message.bot_response }}
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="text-end">
-                                        <small class="text-muted">
-                                            <i class="fas fa-clock me-1"></i>
-                                            {{ message.timestamp.strftime('%H:%M') }}
-                                        </small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-            
-            <!-- Pagination -->
-            {% if history.pages > 1 %}
-                <nav aria-label="Chat history pagination" class="mt-4">
-                    <ul class="pagination justify-content-center">
-                        {% if history.has_prev %}
-                            <li class="page-item">
-                                <a class="page-link" href="{{ url_for('chat.chat_history', page=history.prev_num) }}">
-                                    <i class="fas fa-chevron-left"></i> Previous
-                                </a>
-                            </li>
-                        {% endif %}
-                        
-                        {% for page_num in history.iter_pages() %}
-                            {% if page_num %}
-                                {% if page_num != history.page %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="{{ url_for('chat.chat_history', page=page_num) }}">{{ page_num }}</a>
-                                    </li>
-                                {% else %}
-                                    <li class="page-item active">
-                                        <span class="page-link">{{ page_num }}</span>
-                                    </li>
-                                {% endif %}
-                            {% else %}
-                                <li class="page-item disabled">
-                                    <span class="page-link">...</span>
-                                </li>
-                            {% endif %}
-                        {% endfor %}
-                        
-                        {% if history.has_next %}
-                            <li class="page-item">
-                                <a class="page-link" href="{{ url_for('chat.chat_history', page=history.next_num) }}">
-                                    Next <i class="fas fa-chevron-right"></i>
-                                </a>
-                            </li>
-                        {% endif %}
-                    </ul>
-                </nav>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Pagination -->
+    {% if history.pages > 1 %}
+        <div style="display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
+            {% if history.has_prev %}
+                <a href="{{ url_for('chat.chat_history', page=history.prev_num) }}" class="btn btn-secondary" style="width: auto;">
+                    ← Previous
+                </a>
             {% endif %}
             
-        {% else %}
-            <div class="text-center py-5">
-                <div class="card shadow">
-                    <div class="card-body">
-                        <i class="fas fa-comments fa-3x text-muted mb-3"></i>
-                        <h4 class="text-muted">No Chat History Yet</h4>
-                        <p class="text-muted">Start a conversation to see your chat history here.</p>
-                        <a href="{{ url_for('chat.chat_interface') }}" class="btn btn-primary">
-                            <i class="fas fa-comments me-1"></i>Start Chatting
-                        </a>
-                    </div>
+            <span style="color: #6c757d; font-weight: 600;">
+                Page {{ history.page }} of {{ history.pages }}
+            </span>
+            
+            {% if history.has_next %}
+                <a href="{{ url_for('chat.chat_history', page=history.next_num) }}" class="btn btn-secondary" style="width: auto;">
+                    Next →
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+    
+{% else %}
+    <div class="card">
+        <div class="card-body" style="text-align: center; padding: 3rem 1.5rem;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">📱</div>
+            <h4>No Chat History Yet</h4>
+            <p style="color: #6c757d; margin-bottom: 2rem;">Start chatting with your AI assistant to see your conversation history here.</p>
+            <a href="{{ url_for('chat.chat_interface') }}" class="btn btn-primary">
+                💬 Start Your First Conversation
+            </a>
+        </div>
+    </div>
+{% endif %}
+
+<div class="card">
+    <div class="card-body">
+        <h6>📊 About Your Chat History</h6>
+        <div style="display: grid; gap: 1rem; margin-top: 1rem;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <span style="font-size: 1.5rem;">🔐</span>
+                <div>
+                    <strong>End-to-End Encryption</strong>
+                    <p style="color: #6c757d; margin: 0; font-size: 0.9rem;">All messages are encrypted using military-grade encryption before storage</p>
                 </div>
             </div>
-        {% endif %}
-        
-        <div class="mt-4">
-            <div class="alert alert-info">
-                <h6 class="alert-heading">
-                    <i class="fas fa-info-circle me-2"></i>
-                    About Your Chat History
-                </h6>
-                <ul class="mb-0">
-                    <li><strong>Encryption:</strong> All messages are encrypted using Fernet encryption before storage</li>
-                    <li><strong>Privacy:</strong> Only you can access your chat history - complete user isolation</li>
-                    <li><strong>Export:</strong> Download your chat history as JSON for backup or analysis</li>
-                    <li><strong>Memory:</strong> The chatbot uses this history to provide contextual responses</li>
-                </ul>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <span style="font-size: 1.5rem;">👁️‍🗨️</span>
+                <div>
+                    <strong>Complete Privacy</strong>
+                    <p style="color: #6c757d; margin: 0; font-size: 0.9rem;">Only you can access your conversations - complete user isolation</p>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <span style="font-size: 1.5rem;">💾</span>
+                <div>
+                    <strong>Export & Backup</strong>
+                    <p style="color: #6c757d; margin: 0; font-size: 0.9rem;">Download your chat history as JSON for backup or analysis</p>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <span style="font-size: 1.5rem;">🧠</span>
+                <div>
+                    <strong>Memory System</strong>
+                    <p style="color: #6c757d; margin: 0; font-size: 0.9rem;">The AI uses this history to provide contextual and personalized responses</p>
+                </div>
             </div>
         </div>
     </div>

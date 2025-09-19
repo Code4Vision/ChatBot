@@ -1,124 +1,139 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome - Secure Flask Chatbot{% endblock %}
+{% block title %}Local AI Chatbot - Private & Secure{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="text-center mb-5">
-            <h1 class="display-4 text-primary">
-                <i class="fas fa-robot me-3"></i>
-                Secure Flask Chatbot
-            </h1>
-            <p class="lead text-muted">
-                A production-ready chatbot with Google OAuth 2.0, local LLM integration, 
-                and encrypted conversation memory.
+{% if current_user.is_authenticated %}
+    <!-- Authenticated User Welcome -->
+    <div class="card">
+        <div class="card-header">
+            <h2>👋 Welcome back, {{ current_user.username }}!</h2>
+            <p style="opacity: 0.9; margin: 0.5rem 0 0 0;">Ready to continue your AI conversation?</p>
+        </div>
+        <div class="card-body">
+            <a href="{{ url_for('chat.chat_interface') }}" class="btn btn-primary" style="font-size: 1.2rem;">
+                💬 Start Chatting
+            </a>
+            <a href="{{ url_for('chat.chat_history') }}" class="btn btn-secondary">
+                📝 View Chat History
+            </a>
+        </div>
+    </div>
+    
+    {% if current_user.preferences %}
+        <div class="card">
+            <div class="card-body">
+                <h6>🎯 Your AI Assistant is personalized for:</h6>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;">
+                    <span style="background: #667eea; color: white; padding: 0.5rem 1rem; border-radius: 1rem; font-size: 0.9rem;">
+                        {{ current_user.preferences.get_preference('chat_style', 'friendly').title() }} Style
+                    </span>
+                    <span style="background: #764ba2; color: white; padding: 0.5rem 1rem; border-radius: 1rem; font-size: 0.9rem;">
+                        {{ current_user.preferences.get_preference('response_length', 'medium').title() }} Responses
+                    </span>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+{% else %}
+    <!-- Non-authenticated User Landing -->
+    <div class="card">
+        <div class="card-header">
+            <h1 style="font-size: 2rem; margin-bottom: 0.5rem;">🤖 Local AI Chatbot</h1>
+            <p style="opacity: 0.9; margin: 0;">Private, secure, and completely local AI conversations</p>
+        </div>
+        <div class="card-body">
+            <p style="font-size: 1.1rem; margin-bottom: 2rem; color: #555;">
+                Experience the future of AI chat with complete privacy. Your conversations stay on your device, 
+                powered by local language models.
             </p>
-        </div>
-
-        {% if current_user.is_authenticated %}
-            <div class="card shadow">
-                <div class="card-body text-center">
-                    <h3>Welcome back, {{ current_user.username }}!</h3>
-                    <p class="text-muted">Ready to continue chatting?</p>
-                    <a href="{{ url_for('chat.chat_interface') }}" class="btn btn-primary btn-lg">
-                        <i class="fas fa-comments me-2"></i>Start Chatting
-                    </a>
-                </div>
-            </div>
-        {% else %}
-            <div class="row">
-                <div class="col-md-6 mb-4">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                <i class="fas fa-shield-alt text-success me-2"></i>
-                                Secure & Private
-                            </h5>
-                            <p class="card-text">
-                                Your conversations are encrypted at rest and only you can access them.
-                                Google OAuth 2.0 ensures secure authentication.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-md-6 mb-4">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                <i class="fas fa-brain text-primary me-2"></i>
-                                Smart Memory
-                            </h5>
-                            <p class="card-text">
-                                The chatbot remembers your conversation history and personal preferences
-                                to provide contextual and personalized responses.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-md-6 mb-4">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                <i class="fas fa-microchip text-warning me-2"></i>
-                                Local LLM
-                            </h5>
-                            <p class="card-text">
-                                Powered by local language models (GPT4All/LLaMA) - no external API calls,
-                                ensuring complete privacy and offline functionality.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-md-6 mb-4">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                <i class="fas fa-cogs text-info me-2"></i>
-                                Personalization
-                            </h5>
-                            <p class="card-text">
-                                Customize your chat experience with preferences for response style,
-                                topics of interest, and conversation themes.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
             
-            <div class="text-center mt-4">
-                <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg px-5">
-                    <i class="fab fa-google me-2"></i>
-                    Sign in with Google to Start Chatting
+            <div style="display: grid; gap: 1rem; margin-bottom: 2rem;">
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary" style="font-size: 1.2rem;">
+                    🚀 Get Started Free
                 </a>
-                <p class="text-muted mt-3">
-                    <small>
-                        <i class="fas fa-lock me-1"></i>
-                        Secure authentication powered by Google OAuth 2.0
-                    </small>
-                </p>
+                <a href="{{ url_for('auth.login') }}" class="btn btn-secondary">
+                    🔑 I Already Have an Account
+                </a>
             </div>
-        {% endif %}
-    </div>
-</div>
-
-<div class="row mt-5">
-    <div class="col-12">
-        <div class="alert alert-info">
-            <h5 class="alert-heading">
-                <i class="fas fa-info-circle me-2"></i>
-                Technical Features
-            </h5>
-            <ul class="mb-0">
-                <li><strong>Security:</strong> CSRF protection, secure session cookies, data encryption at rest</li>
-                <li><strong>Architecture:</strong> Modular Flask blueprints, SQLAlchemy ORM, PostgreSQL database</li>
-                <li><strong>Privacy:</strong> User isolation, encrypted chat history, no external API dependencies</li>
-                <li><strong>Scalability:</strong> Production-ready structure, easy migration from SQLite to PostgreSQL</li>
-            </ul>
         </div>
     </div>
-</div>
+    
+    <!-- Feature Cards -->
+    <div style="display: grid; gap: 1rem;">
+        <div class="card">
+            <div class="card-body">
+                <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                    <span style="font-size: 2.5rem;">🔒</span>
+                    <div>
+                        <h5 style="color: #667eea; margin-bottom: 0.5rem;">100% Private & Secure</h5>
+                        <p style="color: #6c757d; margin: 0;">
+                            All conversations are encrypted and stored locally. No data leaves your device. 
+                            No external AI services, no tracking, no privacy concerns.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                    <span style="font-size: 2.5rem;">🧠</span>
+                    <div>
+                        <h5 style="color: #667eea; margin-bottom: 0.5rem;">Smart Memory System</h5>
+                        <p style="color: #6c757d; margin: 0;">
+                            Your AI assistant remembers your conversations, learns your preferences, 
+                            and provides increasingly personalized responses over time.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                    <span style="font-size: 2.5rem;">⚡</span>
+                    <div>
+                        <h5 style="color: #667eea; margin-bottom: 0.5rem;">Fast Local Processing</h5>
+                        <p style="color: #6c757d; margin: 0;">
+                            Powered by GPT4All running directly on this device. No internet connection required 
+                            for chatting - it's always available and lightning fast.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                    <span style="font-size: 2.5rem;">📱</span>
+                    <div>
+                        <h5 style="color: #667eea; margin-bottom: 0.5rem;">Mobile-First Design</h5>
+                        <p style="color: #6c757d; margin: 0;">
+                            Optimized for mobile devices with touch-friendly controls, responsive design, 
+                            and a PWA-like experience that works perfectly on any screen size.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Call to Action -->
+    <div class="card" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+        <div class="card-body" style="text-align: center;">
+            <h4 style="margin-bottom: 1rem;">Ready to Experience Private AI?</h4>
+            <p style="opacity: 0.9; margin-bottom: 2rem;">
+                Join thousands of users who have chosen privacy-first AI conversations.
+            </p>
+            <a href="{{ url_for('auth.register') }}" class="btn" style="background: white; color: #667eea; font-weight: 600;">
+                🌟 Create Your Account Now
+            </a>
+        </div>
+    </div>
+{% endif %}
 {% endblock %}

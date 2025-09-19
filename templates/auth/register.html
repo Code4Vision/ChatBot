@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Create Account - Local AI Chatbot{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>📝 Create Your Account</h2>
+        <p style="opacity: 0.9; margin: 0.5rem 0 0 0;">Join the local AI chatbot experience</p>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('auth.register') }}">
+            {{ form.hidden_tag() }}
+            
+            <div class="form-group">
+                {{ form.username.label(class="form-label") }}
+                {{ form.username(class="form-control") }}
+                {% if form.username.errors %}
+                    <div class="form-text" style="color: #dc3545;">
+                        {% for error in form.username.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% else %}
+                    <div class="form-text">Choose a unique username (3-80 characters)</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.email.label(class="form-label") }}
+                {{ form.email(class="form-control") }}
+                {% if form.email.errors %}
+                    <div class="form-text" style="color: #dc3545;">
+                        {% for error in form.email.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% else %}
+                    <div class="form-text">Used for account recovery and notifications</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.password.label(class="form-label") }}
+                {{ form.password(class="form-control") }}
+                {% if form.password.errors %}
+                    <div class="form-text" style="color: #dc3545;">
+                        {% for error in form.password.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% else %}
+                    <div class="form-text">Minimum 6 characters for security</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.password2.label(class="form-label") }}
+                {{ form.password2(class="form-control") }}
+                {% if form.password2.errors %}
+                    <div class="form-text" style="color: #dc3545;">
+                        {% for error in form.password2.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+        
+        <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e9ecef;">
+            <p style="color: #6c757d; margin-bottom: 1rem;">Already have an account?</p>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-secondary">
+                🔑 Sign In Instead
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h6 style="margin-bottom: 1rem;">🌟 What You Get</h6>
+        <div style="display: grid; gap: 1rem;">
+            <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                <span style="font-size: 1.5rem;">🤖</span>
+                <div>
+                    <strong>Local AI Assistant</strong>
+                    <p style="color: #6c757d; margin: 0; font-size: 0.9rem;">Powered by GPT4All running entirely on this device</p>
+                </div>
+            </div>
+            <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                <span style="font-size: 1.5rem;">🧠</span>
+                <div>
+                    <strong>Memory & Personalization</strong>
+                    <p style="color: #6c757d; margin: 0; font-size: 0.9rem;">Remembers your conversations and adapts to your style</p>
+                </div>
+            </div>
+            <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                <span style="font-size: 1.5rem;">🔒</span>
+                <div>
+                    <strong>Complete Privacy</strong>
+                    <p style="color: #6c757d; margin: 0; font-size: 0.9rem;">All data encrypted and stored locally - no cloud services</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

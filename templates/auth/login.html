@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Local AI Chatbot{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>🔑 Welcome Back</h2>
+        <p style="opacity: 0.9; margin: 0.5rem 0 0 0;">Sign in to continue chatting with your AI assistant</p>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('auth.login') }}">
+            {{ form.hidden_tag() }}
+            
+            <div class="form-group">
+                {{ form.username.label(class="form-label") }}
+                {{ form.username(class="form-control") }}
+                {% if form.username.errors %}
+                    <div class="form-text" style="color: #dc3545;">
+                        {% for error in form.username.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.password.label(class="form-label") }}
+                {{ form.password(class="form-control") }}
+                {% if form.password.errors %}
+                    <div class="form-text" style="color: #dc3545;">
+                        {% for error in form.password.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+        
+        <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e9ecef;">
+            <p style="color: #6c757d; margin-bottom: 1rem;">Don't have an account?</p>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-secondary">
+                📝 Create New Account
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h6 style="margin-bottom: 1rem;">🔒 Your Privacy Matters</h6>
+        <ul style="color: #6c757d; font-size: 0.9rem; list-style: none; padding: 0;">
+            <li style="margin-bottom: 0.5rem;">✅ All data stored locally - no external services</li>
+            <li style="margin-bottom: 0.5rem;">🔐 Chat history encrypted before storage</li>
+            <li style="margin-bottom: 0.5rem;">🤖 AI runs locally - complete privacy</li>
+            <li>🏠 Your conversations never leave this device</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

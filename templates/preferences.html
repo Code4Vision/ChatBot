@@ -1,147 +1,124 @@
 {% extends "base.html" %}
 
-{% block title %}Preferences - Secure Flask Chatbot{% endblock %}
+{% block title %}Settings - Local AI Chatbot{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">
-                    <i class="fas fa-cog me-2"></i>
-                    Personal Preferences
-                </h5>
+<div class="card">
+    <div class="card-header">
+        <h5>⚙️ Personal Settings</h5>
+        <p style="opacity: 0.9; margin: 0.5rem 0 0 0;">Customize your AI assistant experience</p>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('auth.update_preferences') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            
+            <div class="form-group">
+                <label for="display_name" class="form-label">👤 Display Name</label>
+                <input type="text" class="form-control" id="display_name" name="display_name" 
+                       value="{{ preferences.get_preference('display_name', current_user.username) }}"
+                       required>
+                <div class="form-text">How the AI assistant should address you</div>
             </div>
-            <div class="card-body">
-                <form method="POST" action="{{ url_for('auth.update_preferences') }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="display_name" class="form-label">
-                                <i class="fas fa-user me-1"></i>Display Name
-                            </label>
-                            <input type="text" class="form-control" id="display_name" name="display_name" 
-                                   value="{{ preferences.get_preference('display_name', current_user.username) }}"
-                                   required>
-                            <div class="form-text">How the chatbot should address you</div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label for="chat_style" class="form-label">
-                                <i class="fas fa-comments me-1"></i>Chat Style
-                            </label>
-                            <select class="form-select" id="chat_style" name="chat_style">
-                                {% set current_style = preferences.get_preference('chat_style', 'friendly') %}
-                                <option value="friendly" {{ 'selected' if current_style == 'friendly' }}>Friendly & Casual</option>
-                                <option value="professional" {{ 'selected' if current_style == 'professional' }}>Professional</option>
-                                <option value="humorous" {{ 'selected' if current_style == 'humorous' }}>Humorous</option>
-                                <option value="concise" {{ 'selected' if current_style == 'concise' }}>Concise</option>
-                                <option value="detailed" {{ 'selected' if current_style == 'detailed' }}>Detailed</option>
-                            </select>
-                            <div class="form-text">The chatbot's response style</div>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="response_length" class="form-label">
-                            <i class="fas fa-text-width me-1"></i>Response Length
-                        </label>
-                        <select class="form-select" id="response_length" name="response_length">
-                            {% set current_length = preferences.get_preference('response_length', 'medium') %}
-                            <option value="short" {{ 'selected' if current_length == 'short' }}>Short (1-2 sentences)</option>
-                            <option value="medium" {{ 'selected' if current_length == 'medium' }}>Medium (1-2 paragraphs)</option>
-                            <option value="long" {{ 'selected' if current_length == 'long' }}>Long (Detailed explanations)</option>
-                        </select>
-                        <div class="form-text">Preferred length of responses</div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label class="form-label">
-                            <i class="fas fa-heart me-1"></i>Topics of Interest
-                        </label>
-                        <div class="form-text mb-2">Select topics you're interested in (chatbot will reference these for context)</div>
-                        
-                        {% set current_topics = preferences.get_preference('topics_of_interest', []) %}
-                        <div class="row">
-                            {% set topics = [
-                                ('technology', 'Technology'),
-                                ('science', 'Science'),
-                                ('programming', 'Programming'),
-                                ('business', 'Business'),
-                                ('health', 'Health & Fitness'),
-                                ('travel', 'Travel'),
-                                ('food', 'Food & Cooking'),
-                                ('sports', 'Sports'),
-                                ('music', 'Music'),
-                                ('movies', 'Movies & TV'),
-                                ('books', 'Books & Literature'),
-                                ('gaming', 'Gaming'),
-                                ('photography', 'Photography'),
-                                ('art', 'Art & Design'),
-                                ('politics', 'Politics'),
-                                ('education', 'Education')
-                            ] %}
-                            
-                            {% for value, label in topics %}
-                                <div class="col-md-4 col-sm-6 mb-2">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" 
-                                               name="topics_of_interest" value="{{ value }}" 
-                                               id="topic_{{ value }}"
-                                               {{ 'checked' if value in current_topics }}>
-                                        <label class="form-check-label" for="topic_{{ value }}">
-                                            {{ label }}
-                                        </label>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    
-                    <div class="d-flex justify-content-between">
-                        <a href="{{ url_for('chat.chat_interface') }}" class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-left me-1"></i>Back to Chat
-                        </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-1"></i>Save Preferences
-                        </button>
-                    </div>
-                </form>
+            
+            <div class="form-group">
+                <label for="chat_style" class="form-label">💬 Chat Style</label>
+                <select class="form-control" id="chat_style" name="chat_style">
+                    {% set current_style = preferences.get_preference('chat_style', 'friendly') %}
+                    <option value="friendly" {{ 'selected' if current_style == 'friendly' }}>😊 Friendly & Casual</option>
+                    <option value="professional" {{ 'selected' if current_style == 'professional' }}>👔 Professional</option>
+                    <option value="humorous" {{ 'selected' if current_style == 'humorous' }}>😄 Humorous</option>
+                    <option value="concise" {{ 'selected' if current_style == 'concise' }}>📝 Concise</option>
+                    <option value="detailed" {{ 'selected' if current_style == 'detailed' }}>📚 Detailed</option>
+                </select>
+                <div class="form-text">Choose the AI's response personality</div>
             </div>
-        </div>
-        
-        <div class="card mt-4 shadow-sm">
-            <div class="card-header">
-                <h6 class="mb-0">
-                    <i class="fas fa-shield-alt me-2"></i>
-                    Privacy & Security
-                </h6>
+            
+            <div class="form-group">
+                <label for="response_length" class="form-label">📏 Response Length</label>
+                <select class="form-control" id="response_length" name="response_length">
+                    {% set current_length = preferences.get_preference('response_length', 'medium') %}
+                    <option value="short" {{ 'selected' if current_length == 'short' }}>⚡ Short (1-2 sentences)</option>
+                    <option value="medium" {{ 'selected' if current_length == 'medium' }}>📄 Medium (1-2 paragraphs)</option>
+                    <option value="long" {{ 'selected' if current_length == 'long' }}>📖 Long (Detailed explanations)</option>
+                </select>
+                <div class="form-text">Preferred length of AI responses</div>
             </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6><i class="fas fa-lock me-1 text-success"></i>Data Encryption</h6>
-                        <p class="text-muted small">All your preferences and chat history are encrypted using Fernet encryption before being stored in the database.</p>
-                    </div>
-                    <div class="col-md-6">
-                        <h6><i class="fas fa-user-shield me-1 text-success"></i>User Isolation</h6>
-                        <p class="text-muted small">Your data is completely isolated from other users. No one else can access your conversations or preferences.</p>
-                    </div>
-                </div>
+            
+            <div class="form-group">
+                <label class="form-label">❤️ Topics of Interest</label>
+                <div class="form-text" style="margin-bottom: 1rem;">Select topics you're interested in for better conversation context</div>
                 
-                <div class="row mt-3">
-                    <div class="col-md-6">
-                        <h6><i class="fas fa-microchip me-1 text-info"></i>Local Processing</h6>
-                        <p class="text-muted small">The AI runs locally on our servers - no data is sent to external AI services, ensuring complete privacy.</p>
-                    </div>
-                    <div class="col-md-6">
-                        <h6><i class="fas fa-clock me-1 text-primary"></i>Account Info</h6>
-                        <p class="text-muted small">
-                            <strong>Created:</strong> {{ current_user.created_at.strftime('%B %d, %Y') }}<br>
-                            <strong>Last Login:</strong> {{ current_user.last_login.strftime('%B %d, %Y at %I:%M %p') }}
-                        </p>
-                    </div>
+                {% set current_topics = preferences.get_preference('topics_of_interest', []) %}
+                {% set topics = [
+                    ('technology', '💻 Technology'),
+                    ('science', '🔬 Science'),
+                    ('programming', '👩‍💻 Programming'),
+                    ('business', '💼 Business'),
+                    ('health', '🏃‍♀️ Health & Fitness'),
+                    ('travel', '✈️ Travel'),
+                    ('food', '🍳 Food & Cooking'),
+                    ('sports', '⚽ Sports'),
+                    ('music', '🎵 Music'),
+                    ('movies', '🎬 Movies & TV'),
+                    ('books', '📚 Books & Literature'),
+                    ('gaming', '🎮 Gaming'),
+                    ('photography', '📸 Photography'),
+                    ('art', '🎨 Art & Design'),
+                    ('politics', '🏛️ Politics'),
+                    ('education', '🎓 Education')
+                ] %}
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem;">
+                    {% for value, label in topics %}
+                        <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; background: #f8f9fa; border-radius: 0.75rem; cursor: pointer; transition: all 0.3s ease;">
+                            <input type="checkbox" name="topics_of_interest" value="{{ value }}" 
+                                   {{ 'checked' if value in current_topics }}
+                                   style="width: 18px; height: 18px;">
+                            <span style="font-size: 0.9rem;">{{ label }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <a href="{{ url_for('chat.chat_interface') }}" class="btn btn-secondary" style="flex: 1;">
+                    ← Back to Chat
+                </a>
+                <button type="submit" class="btn btn-primary" style="flex: 1;">
+                    💾 Save Settings
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h6>🔒 Privacy & Security</h6>
+        <div style="display: grid; gap: 1rem; margin-top: 1rem;">
+            <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                <span style="font-size: 1.5rem;">🔐</span>
+                <div>
+                    <strong>Data Encryption</strong>
+                    <p style="color: #6c757d; margin: 0; font-size: 0.9rem;">All preferences and chat history are encrypted using advanced encryption before storage.</p>
+                </div>
+            </div>
+            <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                <span style="font-size: 1.5rem;">🏠</span>
+                <div>
+                    <strong>Local Processing</strong>
+                    <p style="color: #6c757d; margin: 0; font-size: 0.9rem;">AI runs locally on this device - no data is sent to external servers, ensuring complete privacy.</p>
+                </div>
+            </div>
+            <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                <span style="font-size: 1.5rem;">👤</span>
+                <div>
+                    <strong>Account Info</strong>
+                    <p style="color: #6c757d; margin: 0; font-size: 0.9rem;">
+                        <strong>Username:</strong> {{ current_user.username }}<br>
+                        <strong>Created:</strong> {{ current_user.created_at.strftime('%B %d, %Y') }}<br>
+                        <strong>Last Login:</strong> {{ current_user.last_login.strftime('%B %d, %Y at %I:%M %p') }}
+                    </p>
                 </div>
             </div>
         </div>

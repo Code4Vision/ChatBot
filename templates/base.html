@@ -2,65 +2,353 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Secure Flask Chatbot{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>{% block title %}Local AI Chatbot{% endblock %}</title>
     
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
+    <!-- Mobile-first CSS -->
     <style>
+        /* CSS Reset and Mobile-First Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
         body {
-            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-size: 16px; /* Prevents zoom on iOS */
         }
-        .chat-container {
-            max-height: 70vh;
-            overflow-y: auto;
-            border: 1px solid #dee2e6;
-            border-radius: 0.375rem;
-            background: white;
+        
+        /* Mobile-first container */
+        .container {
+            width: 100%;
+            max-width: 100%;
+            padding: 1rem;
+            margin: 0 auto;
         }
-        .message-bubble {
-            max-width: 80%;
-            margin-bottom: 1rem;
+        
+        /* Navigation - Mobile First */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .navbar-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .navbar-nav {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            list-style: none;
+        }
+        
+        .nav-link {
+            text-decoration: none;
+            color: #555;
             padding: 0.75rem 1rem;
             border-radius: 1rem;
-            word-wrap: break-word;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-height: 44px; /* iOS touch target minimum */
+            justify-content: center;
         }
-        .user-message {
-            background-color: #007bff;
+        
+        .nav-link:hover, .nav-link:focus {
+            background: #667eea;
             color: white;
-            margin-left: auto;
-            text-align: right;
+            transform: translateY(-1px);
         }
-        .bot-message {
-            background-color: #e9ecef;
-            color: #333;
-            margin-right: auto;
+        
+        /* Buttons - Touch Friendly */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 44px;
+            gap: 0.5rem;
+            text-align: center;
+            width: 100%;
+            margin: 0.5rem 0;
         }
-        .timestamp {
-            font-size: 0.75rem;
-            opacity: 0.7;
-            margin-top: 0.25rem;
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
-        .navbar-brand {
+        
+        .btn-primary:hover, .btn-primary:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #555;
+            border: 2px solid #e9ecef;
+        }
+        
+        .btn-secondary:hover, .btn-secondary:focus {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+        
+        /* Cards - Mobile Optimized */
+        .card {
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 1.5rem;
             font-weight: 600;
         }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        /* Forms - Mobile First */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 1rem;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+            min-height: 44px;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-text {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 0.5rem;
+        }
+        
+        /* Alerts - Mobile Friendly */
+        .alert {
+            padding: 1rem;
+            border-radius: 1rem;
+            margin: 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .alert-info {
+            background: #cce7ff;
+            color: #004085;
+            border: 1px solid #b3d7ff;
+        }
+        
+        /* Chat specific styles */
+        .chat-container {
+            height: 60vh;
+            max-height: 60vh;
+            overflow-y: auto;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 1rem 1rem 0 0;
+        }
+        
+        .message-bubble {
+            max-width: 85%;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 1.5rem;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .user-message {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 0.5rem;
+        }
+        
+        .bot-message {
+            background: white;
+            color: #333;
+            margin-right: auto;
+            border: 1px solid #e9ecef;
+            border-bottom-left-radius: 0.5rem;
+        }
+        
         .chat-input-area {
-            border-top: 1px solid #dee2e6;
             background: white;
             padding: 1rem;
+            border-radius: 0 0 1rem 1rem;
+            border-top: 1px solid #e9ecef;
         }
-        .loading-indicator {
-            display: none;
+        
+        .chat-input-form {
+            display: flex;
+            gap: 0.5rem;
+            align-items: flex-end;
         }
-        .footer {
-            margin-top: 2rem;
-            padding: 1rem 0;
-            text-align: center;
-            color: #6c757d;
-            font-size: 0.875rem;
+        
+        .chat-input {
+            flex: 1;
+            min-height: 44px;
+            max-height: 120px;
+            resize: none;
+            border-radius: 1.5rem;
+            padding: 1rem;
+        }
+        
+        .send-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin: 0;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Desktop and larger screens */
+        @media (min-width: 768px) {
+            .container {
+                max-width: 800px;
+                padding: 2rem;
+            }
+            
+            .btn {
+                width: auto;
+                display: inline-flex;
+            }
+            
+            .navbar-content {
+                flex-wrap: nowrap;
+            }
+            
+            .message-bubble {
+                max-width: 70%;
+            }
+            
+            .chat-container {
+                height: 70vh;
+                max-height: 70vh;
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .container {
+                max-width: 1000px;
+            }
+        }
+        
+        /* PWA-like fullscreen on mobile */
+        @media (max-width: 767px) {
+            .navbar {
+                border-radius: 0;
+            }
+            
+            .container {
+                padding: 0.5rem;
+            }
+        }
+        
+        /* Loading states */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
     
@@ -68,68 +356,33 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
+    <nav class="navbar">
+        <div class="navbar-content">
             <a class="navbar-brand" href="{{ url_for('index') }}">
-                <i class="fas fa-robot me-2"></i>Secure Chatbot
+                🤖 Local AI Chat
             </a>
             
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    {% if current_user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('chat.chat_interface') }}">
-                                <i class="fas fa-comments me-1"></i>Chat
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('chat.chat_history') }}">
-                                <i class="fas fa-history me-1"></i>History
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('auth.preferences') }}">
-                                <i class="fas fa-cog me-1"></i>Preferences
-                            </a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user me-1"></i>{{ current_user.username }}
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ url_for('auth.preferences') }}">
-                                    <i class="fas fa-cog me-2"></i>Preferences
-                                </a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
-                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
-                                </a></li>
-                            </ul>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('auth.login') }}">
-                                <i class="fab fa-google me-1"></i>Login with Google
-                            </a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </div>
+            <ul class="navbar-nav">
+                {% if current_user.is_authenticated %}
+                    <li><a class="nav-link" href="{{ url_for('chat.chat_interface') }}">💬 Chat</a></li>
+                    <li><a class="nav-link" href="{{ url_for('chat.chat_history') }}">📝 History</a></li>
+                    <li><a class="nav-link" href="{{ url_for('auth.preferences') }}">⚙️ Settings</a></li>
+                    <li><a class="nav-link" href="{{ url_for('auth.logout') }}">🚪 Logout</a></li>
+                {% else %}
+                    <li><a class="nav-link" href="{{ url_for('auth.login') }}">🔑 Login</a></li>
+                    <li><a class="nav-link" href="{{ url_for('auth.register') }}">📝 Sign Up</a></li>
+                {% endif %}
+            </ul>
         </div>
     </nav>
 
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            <div class="container mt-3">
+            <div class="container">
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ 'danger' if category == 'error' else ('success' if category == 'success' else 'info') }} alert-dismissible fade show">
+                    <div class="alert alert-{{ 'danger' if category == 'error' else ('success' if category == 'success' else 'info') }}">
                         {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 {% endfor %}
             </div>
@@ -137,20 +390,10 @@
     {% endwith %}
 
     <!-- Main Content -->
-    <main class="container my-4">
+    <main class="container">
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 2025 Secure Flask Chatbot. Your conversations are encrypted and secure.</p>
-        </div>
-    </footer>
-
-    <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
     {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -60,7 +60,7 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         
-        if user and check_password_hash(user.password_hash, form.password.data):
+        if user and form.password.data and check_password_hash(user.password_hash, form.password.data):
             login_user(user, remember=True)
             user.update_last_login()
             flash(f"Welcome back, {user.username}!", "success")
@@ -85,7 +85,8 @@ def register():
         user = User()  # type: ignore
         user.username = form.username.data
         user.email = form.email.data
-        user.password_hash = generate_password_hash(form.password.data)
+        if form.password.data:
+            user.password_hash = generate_password_hash(form.password.data)
         
         db.session.add(user)
         db.session.flush()  # Get the user ID

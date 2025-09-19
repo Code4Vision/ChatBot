@@ -23,12 +23,12 @@ args = "CLI Chatbot"
 name = "CLI Chatbot"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python cli_chatbot.py"
-
 [workflows.workflow.metadata]
 outputType = "console"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "ENCRYPTION_KEY=\"NeIbImXKtay9M7kO_YAwxxNB3AuwDu1knMVX6dkJ8FI=\" python cli_chatbot.py"
 
 [[ports]]
 localPort = 5000

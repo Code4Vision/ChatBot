@@ -445,4 +445,5 @@ For issues and questions:
 
 **Built with ❤️ using Python, SQLAlchemy, Cryptography, and GPT4All**
 
-*This comprehensive AI chatbot combines secure local processing with advanced conversational features for a complete CLI experience.*
+*This comprehensive AI chatbot combines secure local processing with advanced conversational features for a complete CLI experience.*#   C h a t B o t  
+ 

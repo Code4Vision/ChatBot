@@ -164,57 +164,69 @@ class ChatHistory(Base):
     def __repr__(self):
         return f'<ChatHistory User:{self.user_id} at {self.timestamp}>'
 
-# Local LLM integration
+# Gemini AI integration
 try:
-    from gpt4all import GPT4All
-    LLM_AVAILABLE = True
+    from google import genai
+    from google.genai import types
+    import os
+    GEMINI_AVAILABLE = True
+    # Initialize Gemini client
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if api_key:
+        gemini_client = genai.Client(api_key=api_key)
+    else:
+        gemini_client = None
+        GEMINI_AVAILABLE = False
+        print("Warning: GEMINI_API_KEY not found. Using fallback responses.")
 except ImportError:
-    GPT4All = None
-    LLM_AVAILABLE = False
-    print("Warning: GPT4All not available. Using mock responses.")
+    GEMINI_AVAILABLE = False
+    gemini_client = None
+    print("Warning: Gemini not available. Using fallback responses.")
 
 class ChatbotEngine:
-    """Local LLM chatbot engine with memory and personalization"""
+    """Gemini AI chatbot engine with memory and personalization"""
     
     def __init__(self):
-        self.model = None
-        self.model_loaded = False
+        self.ready = GEMINI_AVAILABLE and gemini_client is not None
+        if self.ready:
+            print("Gemini AI ready for fast responses!")
         
     def load_model(self):
-        """Load the local LLM model"""
-        if not LLM_AVAILABLE:
-            return False
-            
-        try:
-            if LLM_AVAILABLE and GPT4All is not None:
-                self.model = GPT4All("Llama-3.2-1B-Instruct-Q4_0.gguf")
-                self.model_loaded = True
-                print("Local LLM model loaded successfully!")
-                return True
-        except Exception as e:
-            print(f"Failed to load LLM model: {e}")
-            return False
-        return False
+        """Check if Gemini API is ready (no model loading needed)"""
+        return self.ready
     
     def generate_response(self, message, user_context=None, conversation_history=None):
-        """Generate chatbot response with context and memory"""
-        if not self.model_loaded and LLM_AVAILABLE:
-            self.load_model()
+        """Generate chatbot response using Gemini API"""
+        if not self.ready or not gemini_client:
+            return self._get_fallback_response(message, user_context)
         
-        # Build context from user preferences and history
-        context = self._build_context(user_context, conversation_history)
-        
-        # Create the prompt with context
-        prompt = f"{context}\n\nUser: {message}\nAssistant:"
-        
-        if self.model_loaded and self.model:
-            try:
-                response = self.model.generate(prompt, max_tokens=200, temp=0.7)
-                return response.strip()
-            except Exception as e:
-                print(f"LLM generation error: {e}")
+        try:
+            # Build context for better responses
+            context = self._build_context(user_context, conversation_history)
+            
+            # Create system instruction for Gemini
+            system_instruction = f"{context}\n\nProvide helpful, accurate, and direct responses."
+            
+            # Generate response using Gemini
+            response = gemini_client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=[
+                    types.Content(role="user", parts=[types.Part(text=message)])
+                ],
+                config=types.GenerateContentConfig(
+                    system_instruction=system_instruction,
+                    max_output_tokens=300,
+                    temperature=0.7
+                )
+            )
+            
+            if response and response.text:
+                return response.text.strip()
+            else:
                 return self._get_fallback_response(message, user_context)
-        else:
+                
+        except Exception as e:
+            print(f"Gemini API error: {e}")
             return self._get_fallback_response(message, user_context)
     
     def _build_context(self, user_context, conversation_history):
@@ -222,23 +234,20 @@ class ChatbotEngine:
         context_parts = []
         
         if user_context:
-            name = user_context.get("display_name", "User")
             style = user_context.get("chat_style", "friendly")
             interests = user_context.get("topics_of_interest", [])
             
-            context_parts.append(f"You are a helpful AI assistant. Be {style} and direct.")
+            context_parts.append(f"Be {style} and direct in your responses.")
             
             if interests:
-                context_parts.append(f"The user likes: {', '.join(interests)}.")
+                context_parts.append(f"User interests: {', '.join(interests)}.")
         
-        # Add conversation context without labels to avoid repetition in responses
+        # Minimal history context for continuity without repetition
         if conversation_history and len(conversation_history) > 0:
-            context_parts.append("Previous context:")
-            for entry in reversed(conversation_history[-2:]):  # Only last 2 for cleaner context
-                context_parts.append(f"Q: {entry.user_message}")
-                context_parts.append(f"A: {entry.bot_response}")
+            last_entry = conversation_history[0]  # Most recent
+            context_parts.append(f"Previous exchange - User: {last_entry.user_message[:50]}...")
         
-        return "\n".join(context_parts)
+        return " ".join(context_parts)
     
     def _get_fallback_response(self, message, user_context=None):
         """Fallback responses when LLM is not available"""
@@ -458,9 +467,9 @@ class CLIChatbot:
                     .order_by(ChatHistory.timestamp.desc())\
                     .limit(3).all()
                 
-                print("🤖 AI is thinking...")
+                print("🤖 Generating response...")
                 
-                # Generate bot response
+                # Generate bot response with Gemini
                 bot_response = self.chatbot_engine.generate_response(
                     user_message, 
                     user_context=user_context,

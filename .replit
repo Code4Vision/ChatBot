@@ -1,7 +1,7 @@
 modules = ["python-3.11"]
 [agent]
 expertMode = true
-integrations = ["flask_google_oauth:1.0.0", "python_database:1.0.0"]
+integrations = ["flask_google_oauth:1.0.0", "python_database:1.0.0", "python_gemini:1.0.0"]
 
 [nix]
 channel = "stable-25_05"

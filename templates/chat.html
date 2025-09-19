@@ -27,13 +27,20 @@
     <div class="chat-container" id="chatMessages">
         {% if chat_history %}
             {% for message in chat_history %}
-                <div style="display: flex; margin-bottom: 1rem; {% if loop.index0 % 2 == 0 %}justify-content: flex-end;{% endif %}">
-                    <div class="message-bubble {% if loop.index0 % 2 == 0 %}user-message{% else %}bot-message{% endif %}">
-                        {% if loop.index0 % 2 == 0 %}
-                            {{ message.user_message }}
-                        {% else %}
-                            {{ message.bot_response }}
-                        {% endif %}
+                <!-- User Message -->
+                <div style="display: flex; margin-bottom: 1rem; justify-content: flex-end;">
+                    <div class="message-bubble user-message">
+                        {{ message.user_message }}
+                        <div style="font-size: 0.75rem; margin-top: 0.5rem; opacity: 0.7;">
+                            {{ message.timestamp.strftime('%H:%M') }}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bot Response -->
+                <div style="display: flex; margin-bottom: 1rem;">
+                    <div class="message-bubble bot-message">
+                        {{ message.bot_response }}
                         <div style="font-size: 0.75rem; margin-top: 0.5rem; opacity: 0.7;">
                             {{ message.timestamp.strftime('%H:%M') }}
                         </div>

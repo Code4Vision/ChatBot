@@ -33,11 +33,12 @@ def create_app():
     }
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
-    # Security configuration
-    app.config['SESSION_COOKIE_SECURE'] = True
+    # Security configuration - only use secure cookies in production
+    is_production = os.environ.get('FLASK_ENV') == 'production' or os.environ.get('REPLIT_ENVIRONMENT') == 'production'
+    app.config['SESSION_COOKIE_SECURE'] = is_production
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-    app.config['REMEMBER_COOKIE_SECURE'] = True
+    app.config['REMEMBER_COOKIE_SECURE'] = is_production
     app.config['WTF_CSRF_TIME_LIMIT'] = 3600
     
     # Initialize extensions

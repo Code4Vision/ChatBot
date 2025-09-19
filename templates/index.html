@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - Secure Flask Chatbot{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="text-center mb-5">
+            <h1 class="display-4 text-primary">
+                <i class="fas fa-robot me-3"></i>
+                Secure Flask Chatbot
+            </h1>
+            <p class="lead text-muted">
+                A production-ready chatbot with Google OAuth 2.0, local LLM integration, 
+                and encrypted conversation memory.
+            </p>
+        </div>
+
+        {% if current_user.is_authenticated %}
+            <div class="card shadow">
+                <div class="card-body text-center">
+                    <h3>Welcome back, {{ current_user.username }}!</h3>
+                    <p class="text-muted">Ready to continue chatting?</p>
+                    <a href="{{ url_for('chat.chat_interface') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-comments me-2"></i>Start Chatting
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-shield-alt text-success me-2"></i>
+                                Secure & Private
+                            </h5>
+                            <p class="card-text">
+                                Your conversations are encrypted at rest and only you can access them.
+                                Google OAuth 2.0 ensures secure authentication.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-brain text-primary me-2"></i>
+                                Smart Memory
+                            </h5>
+                            <p class="card-text">
+                                The chatbot remembers your conversation history and personal preferences
+                                to provide contextual and personalized responses.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-microchip text-warning me-2"></i>
+                                Local LLM
+                            </h5>
+                            <p class="card-text">
+                                Powered by local language models (GPT4All/LLaMA) - no external API calls,
+                                ensuring complete privacy and offline functionality.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-cogs text-info me-2"></i>
+                                Personalization
+                            </h5>
+                            <p class="card-text">
+                                Customize your chat experience with preferences for response style,
+                                topics of interest, and conversation themes.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg px-5">
+                    <i class="fab fa-google me-2"></i>
+                    Sign in with Google to Start Chatting
+                </a>
+                <p class="text-muted mt-3">
+                    <small>
+                        <i class="fas fa-lock me-1"></i>
+                        Secure authentication powered by Google OAuth 2.0
+                    </small>
+                </p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <h5 class="alert-heading">
+                <i class="fas fa-info-circle me-2"></i>
+                Technical Features
+            </h5>
+            <ul class="mb-0">
+                <li><strong>Security:</strong> CSRF protection, secure session cookies, data encryption at rest</li>
+                <li><strong>Architecture:</strong> Modular Flask blueprints, SQLAlchemy ORM, PostgreSQL database</li>
+                <li><strong>Privacy:</strong> User isolation, encrypted chat history, no external API dependencies</li>
+                <li><strong>Scalability:</strong> Production-ready structure, easy migration from SQLite to PostgreSQL</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

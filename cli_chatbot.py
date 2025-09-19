@@ -186,7 +186,7 @@ class ChatbotEngine:
             return False
             
         try:
-            if LLM_AVAILABLE:
+            if LLM_AVAILABLE and GPT4All is not None:
                 self.model = GPT4All("Llama-3.2-1B-Instruct-Q4_0.gguf")
                 self.model_loaded = True
                 print("Local LLM model loaded successfully!")
@@ -226,17 +226,17 @@ class ChatbotEngine:
             style = user_context.get("chat_style", "friendly")
             interests = user_context.get("topics_of_interest", [])
             
-            context_parts.append(f"You are a helpful AI assistant chatting with {name}.")
-            context_parts.append(f"Your response style should be: {style}.")
+            context_parts.append(f"You are a helpful AI assistant. Be {style} and direct.")
             
             if interests:
-                context_parts.append(f"{name} is interested in: {', '.join(interests)}.")
+                context_parts.append(f"The user likes: {', '.join(interests)}.")
         
+        # Add conversation context without labels to avoid repetition in responses
         if conversation_history and len(conversation_history) > 0:
-            context_parts.append("\nRecent conversation:")
-            for entry in conversation_history[-3:]:  # Last 3 exchanges for context
-                context_parts.append(f"User: {entry.user_message}")
-                context_parts.append(f"Assistant: {entry.bot_response}")
+            context_parts.append("Previous context:")
+            for entry in reversed(conversation_history[-2:]):  # Only last 2 for cleaner context
+                context_parts.append(f"Q: {entry.user_message}")
+                context_parts.append(f"A: {entry.bot_response}")
         
         return "\n".join(context_parts)
     
@@ -470,6 +470,8 @@ class CLIChatbot:
                 print(f"🤖 AI: {bot_response}")
                 
                 # Save to database with encryption
+                if self.current_user is None:
+                    break
                 chat_entry = ChatHistory(
                     user_id=self.current_user.id,
                     conversation_id=conversation_id
@@ -516,6 +518,9 @@ class CLIChatbot:
         """Manage user preferences"""
         print("\n--- Manage Preferences ---")
         
+        if self.current_user is None:
+            print("No user logged in.")
+            return
         prefs = self.current_user.preferences
         if not prefs:
             prefs = UserPreferences(
@@ -532,7 +537,7 @@ class CLIChatbot:
         
         while True:
             print(f"\nCurrent Preferences:")
-            print(f"1. Display Name: {prefs.get_preference('display_name', self.current_user.username)}")
+            print(f"1. Display Name: {prefs.get_preference('display_name', self.current_user.username if self.current_user else 'User')}")
             print(f"2. Chat Style: {prefs.get_preference('chat_style', 'friendly')}")
             print(f"3. Response Length: {prefs.get_preference('response_length', 'medium')}")
             print(f"4. Topics of Interest: {', '.join(prefs.get_preference('topics_of_interest', []))}")
@@ -584,6 +589,9 @@ class CLIChatbot:
     
     def logout(self):
         """Logout current user"""
+        if self.current_user is None:
+            print("No user logged in.")
+            return
         username = self.current_user.username
         self.current_user = None
         print(f"✅ Goodbye {username}! You have been logged out.")
